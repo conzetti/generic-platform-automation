@@ -1,0 +1,52 @@
+---
+s3:
+  access_key_id: ((prod_s3_access_key_id))
+  region_name: ((prod_s3_region_name))
+  buckets:
+    product: ((prod_pcf_product_bucket))
+    config: ((prod_pcf_config_bucket))
+  secret_access_key: ((prod_s3_secret_access_key))
+  endpoint: ((prod_s3_endpoint))
+pivnet_token: ((pivnet_token))
+opsman_version:  ((prod_opsman_version))
+opsman_image_wildcard: "OpsManager*.yml"
+pcf_automation_version: 0.0.1-rc.214
+pas_version: ((prod_pas_version))
+healthwatch_version: ((prod_healthwatch_version))
+opsman_image_s3_versioned_regexp: ((prod_opsman_image_s3_versioned_regexp))
+opsman_target: ((prod_opsman_target))
+opsman_skip_ssl_validation: true
+opsman_user: ((prod_opsman_user))
+opsman_password: ((prod_opsman_password))
+opsman_decryption_passphrase: ((prod_opsman_passphrase))
+director_client_id: ((prod_director_client_id))
+director_client_secret: ((prod_director_client_secret))
+director_default_security_group: ((prod_director_security_group))
+director_environment: ((prod_director_environment))
+director_resource_group_name: ((prod_director_resource_group_name))
+director_ssh_public_key: ((prod_director_ssh_public_key))
+director_subscription_id: ((prod_director_subscription_id))
+director_tenant_id: ((prod_director_tenant_id))
+net_dns: 168.63.129.16
+net_mgmt_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-management-subnet
+net_mgmt_cidr: 10.0.8.0/26
+net_mgmt_gateway: 10.0.8.1
+net_mgmt_reserved_range: 10.0.8.1-10.0.8.10
+net_dep_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-pas-subnet
+net_dep_cidr: 10.0.0.0/22
+net_dep_gateway: 10.0.0.1
+net_dep_reserved_range: 10.0.0.1-10.0.0.9
+net_svcs_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-services-subnet
+net_svcs_cidr: 10.0.4.0/22
+net_svcs_gateway: 10.0.4.1
+net_svcs_reserved_range: 10.0.4.1-10.0.4.9
+iaas_configuration_region: "East US"
+opsman_public_ip: 40.117.89.161
+opsman_private_ip: 10.0.8.11
+net_config_network: pcf-dxc-com-virtual-network
+net_config_mgmt_subnet: pcf-dxc-com-management-subnet
+iaas_configuration_storage_account: ((prod_azure_storage_account))
+iaas_configuration_storage_key: ((prod_azure_storage_key))
+opsman_vm_name: opsman
+opsman_boot_disk_size: 150
+opsman_security_group: ((prod_opsman_security_group))

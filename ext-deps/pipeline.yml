@@ -1,0 +1,134 @@
+---
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+
+- name: platform-automation-pivnet
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: platform-automation
+    product_version: ((pcf_automation_version))
+    sort_by: semver
+
+- name: platform-automation-tasks-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: tasks-(.*).zip
+    endpoint: ((s3.endpoint))
+
+- name: platform-automation-image-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: image-(.*).tgz
+    endpoint: ((s3.endpoint))
+
+- name: pas-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: elastic-runtime
+    product_version: ((pas_version))
+    sort_by: semver
+
+- name: pas-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: cf-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: healthwatch-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: p-healthwatch
+    product_version: ((healthwatch_version))
+    sort_by: semver
+
+- name: healthwatch-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: p-healthwatch-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: opsman-image
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: ops-manager
+    product_version: ((opsman_version))
+    sort_by: semver
+
+- name: opsman-image-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: ((opsman_image_s3_versioned_regexp))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+jobs:
+- name: get-platform-automation
+  plan:
+  - get: platform-automation-pivnet
+    trigger: true
+  - aggregate:
+    - put: platform-automation-tasks-s3
+      params:
+        file: platform-automation-pivnet/*tasks-*.zip
+    - put: platform-automation-image-s3
+      params:
+        file: platform-automation-pivnet/*image-*.tgz
+
+- name: get-pas-product
+  plan:
+  - get: pas-product
+    params:
+      globs: ["cf*.pivotal"]
+    trigger: true
+  - put: pas-product-s3
+    params:
+      file: pas-product/cf-*.pivotal
+
+- name: get-healthwatch-product
+  plan:
+  - get: healthwatch-product
+    params:
+      globs: ["p-healthwatch*.pivotal"]
+    trigger: true
+  - put: healthwatch-product-s3
+    params:
+      file: healthwatch-product/p-healthwatch-*.pivotal
+
+- name: get-opsman-image
+  plan:
+  - get: opsman-image
+    params:
+      globs: ["*Azure*.yml"]
+    trigger: true
+  - put: opsman-image-s3
+    params:
+      file: opsman-image/((opsman_image_wildcard))
