@@ -25,13 +25,14 @@ director_default_security_group: ((prod_director_security_group))
 director_environment: ((prod_director_environment))
 director_resource_group_name: ((prod_director_resource_group_name))
 director_ssh_public_key: ((prod_director_ssh_public_key))
+director_ssh_private_key: ((prod_director_ssh_private_key))
 director_subscription_id: ((prod_director_subscription_id))
 director_tenant_id: ((prod_director_tenant_id))
 net_dns: 168.63.129.16
 net_mgmt_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-management-subnet
 net_mgmt_cidr: 10.0.8.0/26
 net_mgmt_gateway: 10.0.8.1
-net_mgmt_reserved_range: 10.0.8.1-10.0.8.10
+net_mgmt_reserved_range: 10.0.8.1-10.0.8.11
 net_dep_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-pas-subnet
 net_dep_cidr: 10.0.0.0/22
 net_dep_gateway: 10.0.0.1
@@ -45,6 +46,7 @@ opsman_public_ip: 40.117.89.161
 opsman_private_ip: 10.0.8.11
 net_config_network: pcf-dxc-com-virtual-network
 net_config_mgmt_subnet: pcf-dxc-com-management-subnet
+director_storage_account_name: ((prod_azure_storage_account))
 iaas_configuration_storage_account: ((prod_azure_storage_account))
 iaas_configuration_storage_key: ((prod_azure_storage_key))
 opsman_vm_name: opsman
