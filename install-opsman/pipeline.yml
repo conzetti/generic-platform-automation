@@ -155,27 +155,43 @@ jobs:
         OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
         OPSMAN_CONNECT_TIMEOUT: 1600
         OPSMAN_REQUEST_TIMEOUT: 600
-  - task: generate-opsman-config
+  - task: generate-opsman-and-director-config
     params:
-      iaas_configuration_subscription_id: ((director_subscription_id))
-      iaas_configuration_resource_group_name: ((director_resource_group_name))
-      iaas_configuration_tenant_id: ((director_tenant_id))
       iaas_configuration_client_id: ((director_client_id))
       iaas_configuration_client_secret: ((director_client_secret))
-      iaas_configuration_region: ((iaas_configuration_region))
-      opsman_public_ip: ((opsman_public_ip))
-      opsman_private_ip: ((opsman_private_ip))
+      iaas_configuration_default_security_group: ((director_default_security_group))
       iaas_configuration_default_security_group: ((opsman_security_group))
-      net_config_network: ((net_config_network))
-      net_config_mgmt_subnet: ((net_config_mgmt_subnet))
+      iaas_configuration_environment: ((director_environment))
+      iaas_configuration_region: ((iaas_configuration_region))
+      iaas_configuration_resource_group_name: ((director_resource_group_name))
+      iaas_configuration_ssh_public_key: ((director_ssh_public_key))
       iaas_configuration_storage_account: ((iaas_configuration_storage_account))
       iaas_configuration_storage_key: ((iaas_configuration_storage_key))
-      iaas_configuration_ssh_public_key: ((director_ssh_public_key))
-      opsman_vm_name: ((opsman_vm_name))
+      iaas_configuration_subscription_id: ((director_subscription_id))
+      iaas_configuration_tenant_id: ((director_tenant_id))
+      net_config_dep_cidr: ((net_dep_cidr))
+      net_config_dep_gateway: ((net_dep_gateway))
+      net_config_dep_iaas_id: ((net_dep_iaas_id))
+      net_config_dep_reserved_range: ((net_dep_reserved_range))
+      net_config_dns: ((net_dns))
+      net_config_mgmt_cidr: ((net_mgmt_cidr))
+      net_config_mgmt_gateway: ((net_mgmt_gateway))
+      net_config_mgmt_iaas_id: ((net_mgmt_iaas_id))
+      net_config_mgmt_reserved_range: ((net_mgmt_reserved_range))
+      net_config_mgmt_subnet: ((net_config_mgmt_subnet))
+      net_config_network: ((net_config_network))
+      net_config_svcs_cidr: ((net_svcs_cidr))
+      net_config_svcs_gateway: ((net_svcs_gateway))
+      net_config_svcs_iaas_id: ((net_svcs_iaas_id))
+      net_config_svcs_reserved_range: ((net_svcs_reserved_range))
       opsman_boot_disk_size: ((opsman_boot_disk_size))
+      opsman_private_ip: ((opsman_private_ip))
+      opsman_public_ip: ((opsman_public_ip))
+      opsman_vm_name: ((opsman_vm_name))
     config:
       inputs:
         - name: opsman-config
+        - name: director-config
       outputs:
         - name: vars
       platform: linux
@@ -190,45 +206,9 @@ jobs:
         - |
           source /dev/stdin <<<"$(echo 'cat <<YAML >opsman.yml';
           cat opsman-config/opsman.yml; echo YAML;)";
-          cp -v opsman.yml vars/opsman.yml;
-  - task: generate-director-config
-    params:
-      iaas_configuration_client_id: ((director_client_id))
-      iaas_configuration_client_secret: ((director_client_secret))
-      iaas_configuration_default_security_group: ((director_default_security_group))
-      iaas_configuration_environment: ((director_environment))
-      iaas_configuration_resource_group_name: ((director_resource_group_name))
-      iaas_configuration_ssh_public_key: ((director_ssh_public_key))
-      iaas_configuration_subscription_id: ((director_subscription_id))
-      iaas_configuration_tenant_id: ((director_tenant_id))
-      net_config_mgmt_cidr: ((net_mgmt_cidr))
-      net_config_mgmt_gateway: ((net_mgmt_gateway))
-      net_config_mgmt_reserved_range: ((net_mgmt_reserved_range))
-      net_config_mgmt_iaas_id: ((net_mgmt_iaas_id))
-      net_config_dep_cidr: ((net_dep_cidr))
-      net_config_dep_gateway: ((net_dep_gateway))
-      net_config_dep_reserved_range: ((net_dep_reserved_range))
-      net_config_dep_iaas_id: ((net_dep_iaas_id))
-      net_config_svcs_cidr: ((net_svcs_cidr))
-      net_config_svcs_gateway: ((net_svcs_gateway))
-      net_config_svcs_reserved_range: ((net_svcs_reserved_range))
-      net_config_svcs_iaas_id: ((net_svcs_iaas_id))
-      net_config_dns: ((net_dns))
-    config:
-      inputs:
-        - name: director-config
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: pcfnorm/rootfs
-      run:
-        path: bash
-        args:
-        - -c
-        - |
           source /dev/stdin <<<"$(echo 'cat <<YAML >director.yml';
           cat director-config/director.yml; echo YAML;)"
+          cp -v opsman.yml director.yml vars/;
   - task: create-vm
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/create-vm.yml
@@ -244,10 +224,11 @@ jobs:
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-authentication.yml
     attempts: 10
-
   - task: configure-director
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-director.yml
+    params:
+      DIRECTOR_CONFIG_FILE: ../vars/director.yml
   - task: apply-director-changes
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/apply-director-changes.yml
