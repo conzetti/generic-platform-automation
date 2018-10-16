@@ -1,0 +1,5 @@
+*.pem
+.idea
+.vagrant
+.tox
+*.pyc
