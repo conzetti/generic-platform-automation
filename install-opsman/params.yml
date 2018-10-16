@@ -48,9 +48,7 @@ net_config_network: pcf-dxc-com-virtual-network
 net_config_mgmt_subnet: pcf-dxc-com-management-subnet
 director_storage_account_name: ((prod_azure_storage_account))
 iaas_configuration_storage_account: ((prod_azure_storage_account))
-#iaas_configuration_storage_account: dxcopsmanager2
 iaas_configuration_storage_key: ((prod_azure_storage_key))
-#iaas_configuration_storage_key: YpfGqs3cAEmmQzV1uzKnIRRq88rGPtf29/ESPMPU/Ig0i9GHxWC2EudTaNcRdb8vbGm/ZUtv+X7YPuGLLGaELA==
 opsman_vm_name: opsman
 opsman_boot_disk_size: 150
 opsman_security_group: ((prod_opsman_security_group))
