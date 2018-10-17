@@ -1,0 +1,92 @@
+---
+s3:
+  access_key_id: ((prod_s3_access_key_id))
+  region_name: ((prod_s3_region_name))
+  buckets:
+    product: ((prod_pcf_product_bucket))
+    config: ((prod_pcf_config_bucket))
+  secret_access_key: ((prod_s3_secret_access_key))
+  endpoint: ((prod_s3_endpoint))
+pivnet_token: ((pivnet_token))
+mysql_version: ((mysql_version))
+opsman_target: ((prod_opsman_target))
+opsman_user: ((prod_opsman_user))
+opsman_password: ((prod_opsman_password))
+opsman_skip_ssl_validation: true
+opsman_decryption_passphrase: prod_opsman_passphrase
+mysql-config:
+  product-properties:
+    .properties.allow_lower_case_table_names_via_config_param:
+      value: false # required
+    .properties.audit_logging_enabled:
+      value: false # required
+    .properties.backups_selector:
+      value: Azure # required
+    .properties.backups_selector.azure.account:
+      value: ((prod_azure_storage_account)) # required
+    .properties.backups_selector.azure.container:
+      value: ((prod_azure_storage_backup_container))
+    .properties.backups_selector.azure.cron_schedule:
+      value: 0 */8 * * * # required
+    .properties.backups_selector.azure.enable_email_alerts:
+      value: false # required
+    .properties.backups_selector.azure.path:
+      value: mysql-backups
+    .properties.backups_selector.azure.storage_access_key:
+      value: ((prod_azure_storage_key))
+    .properties.canary_instances:
+      value: 0 # required
+    .properties.enable_lower_case_table_names:
+      value: false # required
+    .properties.enable_read_only_admin:
+      value: false # required
+    .properties.enable_secure_binding_credentials:
+      value: false # required
+    .properties.enable_tls_selector:
+      value: disabled # required
+    .properties.global_service_instance_limit:
+      value: 50 # required
+    .properties.local_infile:
+      value: false # required
+    .properties.mysql_metrics_frequency:
+      value: 30 # required
+    .properties.plan1_selector:
+      value: Active # required
+    .properties.plan1_selector.active.access_dropdown:
+      value: enable # required
+    .properties.plan1_selector.active.az_multi_select:
+      value: null # required
+    .properties.plan1_selector.active.description:
+      value: This plan provides a small dedicated MySQL instance. # required
+    .properties.plan1_selector.active.disk_size:
+      value: Automatic # required
+    .properties.plan1_selector.active.instance_limit:
+      value: null
+    .properties.plan1_selector.active.multi_node_deployment:
+      value: false # required
+    .properties.plan1_selector.active.name:
+      value: db-small # required
+    .properties.plan1_selector.active.vm_type:
+      value: Automatic # required
+    .properties.request_timeout:
+      value: 120 # required
+    .properties.simultaneous_upgrades:
+      value: 1 # required
+    .properties.syslog_migration_selector:
+      value: disabled # required
+    .properties.syslog_migration_selector.enabled.address:
+      value: null # required
+    .properties.syslog_migration_selector.enabled.ca_cert:
+      value: null
+    .properties.syslog_migration_selector.enabled.permitted_peer:
+      value: null
+    .properties.syslog_migration_selector.enabled.port:
+      value: null # required
+    .properties.syslog_migration_selector.enabled.tls_enabled:
+      value: true # required
+    .properties.syslog_migration_selector.enabled.transport_protocol:
+      value: tcp # required
+    .properties.userstat:
+      value: false # required
+    .properties.vm_extensions:
+      value: null

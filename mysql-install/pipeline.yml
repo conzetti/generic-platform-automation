@@ -1,0 +1,137 @@
+resources:
+- name: pcf-automation-tasks
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: .*tasks-(.*).zip
+
+- name: pcf-automation-image
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: platform-automation-image-(.*).tgz
+
+- name: mysqlproduct
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: pivotal-mysql-(.*).pivotal
+- name: pipeline-utilities
+  type: git
+  source:
+    uri: https://github.com/pivotalservices/pipeline-utilities.git
+
+jobs:
+- name: upload-and-stage-mysql
+  serial: true
+  plan:
+  - task: create-env-file
+      file: pipeline-utilities/tasks/create-env-file.yml
+      params:
+        OPSMAN_TARGET: ((opsman_target))
+        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+        OPSMAN_USERNAME: ((opsman_user))
+        OPSMAN_PASSWORD: ((opsman_password))
+        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+        OPSMAN_CONNECT_TIMEOUT: 1600
+        OPSMAN_REQUEST_TIMEOUT: 600
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: mysqlproduct
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
+    input_mapping:
+      product: mysql-product
+    params:
+      ENV_FILE: env/env.yml
+
+- name: configure-mysql
+  serial: true
+  plan:
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+      passed:
+      - upload-and-stage-mysql
+      trigger: true
+  - task: generate-mysql-config
+    params:
+      MYSQL_CONFIG: ((mysql-config))
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pivotalservices/bosh2-docker
+      outputs:
+        - name: config
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          bosh int <(echo "${MYSQL_CONFIG}") > mysql-config.yml
+  - task: configure-mysql
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/configure-product.yml
+    params:
+      CONFIG_FILE: mysql-config.yml
+      ENV_FILE: env.yml
+      
+- name: apply-product-changes
+  serial: true
+  plan:
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+      passed:
+      - configure-mysql
+      trigger: true
+  - task: apply-product-changes
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/apply-changes.yml
+    params:
+      ENV_FILE: ((foundation))/env/env.yml
+
+- name: staged-mysql-config
+  plan:
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+  - task: staged-config
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/staged-config.yml
+    input_mapping:
+      env: configuration
+    params:
+      PRODUCT_NAME: pivotal-mysql
+      ENV_FILE: ((foundation))/env/env.yml

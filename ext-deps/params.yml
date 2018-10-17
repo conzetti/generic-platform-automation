@@ -8,9 +8,14 @@ s3:
   secret_access_key: ((prod_s3_secret_access_key))
   endpoint: ((prod_s3_endpoint))
 pivnet_token: ((pivnet_token))
+mysql_version: ((mysql_version))
+redis_version: ((redis_version))
+spring_cloud_services: ((spring_cloud_services_version))
+rabbitmq_version: ((rabbitmq_version))
 opsman_version:  ((prod_opsman_version))
 opsman_image_wildcard: "OpsManager*.yml"
 pcf_automation_version: 0.0.1-rc.214
 pas_version: ((prod_pas_version))
 healthwatch_version: ((prod_healthwatch_version))
 opsman_image_s3_versioned_regexp: ((prod_opsman_image_s3_versioned_regexp))
+metrics_version: ((metrics_version))
