@@ -162,7 +162,7 @@ jobs:
       iaas_configuration_client_id: ((director_client_id))
       iaas_configuration_client_secret: ((director_client_secret))
       iaas_configuration_default_security_group: ((director_default_security_group))
-      iaas_configuration_default_security_group: ((opsman_security_group))
+      iaas_configuration_opsman_security_group: ((opsman_security_group))
       iaas_configuration_environment: ((director_environment))
       iaas_configuration_region: ((iaas_configuration_region))
       iaas_configuration_resource_group_name: ((director_resource_group_name))
