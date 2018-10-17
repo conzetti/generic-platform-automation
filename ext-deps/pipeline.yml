@@ -180,6 +180,42 @@ resources:
     secret_access_key: ((s3.secret_access_key))
     endpoint: ((s3.endpoint))
 
+- name: stemcell
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: stemcells
+    product_version: ((stemcell_version))
+    sort_by: semver
+
+- name: stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-trusty-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: xenial-stemcell
+  type: pivnet
+  source: 
+    api_token: ((pivnet_token))
+    product_slug: stemcells-ubuntu-xenial
+    product_version: ((xenial_stemcell_version))
+    sort_byt: semver
+
+- name: xenial-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-xenial-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
 jobs:
 - name: get-platform-automation
   plan:
@@ -272,3 +308,23 @@ jobs:
   - put: opsman-image-s3
     params:
       file: opsman-image/((opsman_image_wildcard))
+
+- name: get-stemcells
+  plan:
+  - aggregate:
+     - get: stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz"]
+       trigger: true
+     - get: xenial-stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz"] 
+       trigger: true
+  - aggregate:
+     - put: stemcell-s3
+       params:
+         file: stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz
+     - put: xenial-stemcell-s3
+       params:
+         file: xenial-stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz
+   
