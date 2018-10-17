@@ -1,0 +1,138 @@
+---
+resources:
+- name: pcf-automation-tasks
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: .*tasks-(.*).zip
+    endpoint: ((s3.endpoint))
+
+- name: pcf-automation-image
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: .*image-(.*).tgz
+    endpoint: ((s3.endpoint))
+
+- name: pas-product
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: cf-(.*).pivotal
+    endpoint: ((s3.endpoint))
+
+- name: pipeline-utilities 
+  type: git
+  source:
+    uri: https://github.com/pivotalservices/pipeline-utilities.git
+
+jobs:
+- name: upload-and-stage-pas
+  serial: true
+  serial_groups: [ install ]
+  plan:
+  - aggregate:
+    - get: pipeline-utilities
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: pas-product
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_username))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - task: upload-and-stage-product
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
+    input_mapping:
+      product: pas-product
+- name: configure-pas
+  serial: true
+  serial_groups: [ install ]
+  plan:
+  - aggregate:
+    - get: pipeline-utilities
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: pcf-automation-image
+      params:
+        unpack: true
+      passed: [ upload-and-stage-pas ]
+      trigger: true
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_username))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - task: render-config
+    params:
+      PAS_CONFIG: ((pas_config))
+    config:
+      outputs:
+        - name: config
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pivotalservices/bosh2-docker
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          bosh int <(echo "${PAS_CONFIG}") > config/cf.yml
+  - task: configure-pas
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/configure-product.yml
+    params:
+      CONFIG_FILE: cf.yml
+- name: apply-product-changes
+  serial: true
+  plan:
+  - aggregate:
+    - get: pipeline-utilities
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: pcf-automation-image
+      params:
+        unpack: true
+      passed: [ configure-pas ]
+      trigger: true
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_username))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - task: apply-product-changes
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/apply-changes.yml
