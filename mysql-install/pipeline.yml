@@ -28,6 +28,17 @@ resources:
     endpoint: ((s3.endpoint))
     secret_access_key: ((s3.secret_access_key))
     regexp: pivotal-mysql-(.*).pivotal
+
+- name: xenial-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-xenial-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
 - name: pipeline-utilities
   type: git
   source:
@@ -37,16 +48,18 @@ jobs:
 - name: upload-and-stage-mysql
   serial: true
   plan:
+  - get: pipeline-utilities
   - task: create-env-file
-      file: pipeline-utilities/tasks/create-env-file.yml
-      params:
-        OPSMAN_TARGET: ((opsman_target))
-        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-        OPSMAN_USERNAME: ((opsman_user))
-        OPSMAN_PASSWORD: ((opsman_password))
-        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-        OPSMAN_CONNECT_TIMEOUT: 1600
-        OPSMAN_REQUEST_TIMEOUT: 600
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - get: xenial-stemcell-s3
   - aggregate:
     - get: pcf-automation-image
       params:
@@ -55,17 +68,24 @@ jobs:
       params:
         unpack: true
     - get: mysqlproduct
+  - task: upload-stemcell
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/upload-stemcell.yml
+    input_mapping:
+      stemcell: xenial-stemcell-s3
+  - task: upload-and-stage-product
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
     input_mapping:
-      product: mysql-product
+      product: mysqlproduct
     params:
-      ENV_FILE: env/env.yml
+      ENV_FILE: env.yml
 
 - name: configure-mysql
   serial: true
   plan:
   - aggregate:
+    - get: pipeline-utilities
     - get: pcf-automation-image
       params:
         unpack: true
@@ -75,6 +95,16 @@ jobs:
       passed:
       - upload-and-stage-mysql
       trigger: true
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
   - task: generate-mysql-config
     params:
       MYSQL_CONFIG: ((mysql-config))
@@ -91,7 +121,7 @@ jobs:
         args:
         - "-c"
         - |
-          bosh int <(echo "${MYSQL_CONFIG}") > mysql-config.yml
+          bosh int <(echo "${MYSQL_CONFIG}") > config/mysql-config.yml
   - task: configure-mysql
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-product.yml
@@ -112,11 +142,21 @@ jobs:
       passed:
       - configure-mysql
       trigger: true
+    - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
   - task: apply-product-changes
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/apply-changes.yml
     params:
-      ENV_FILE: ((foundation))/env/env.yml
+      ENV_FILE: env.yml
 
 - name: staged-mysql-config
   plan:
@@ -127,11 +167,19 @@ jobs:
     - get: pcf-automation-tasks
       params:
         unpack: true
+    - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
   - task: staged-config
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/staged-config.yml
-    input_mapping:
-      env: configuration
     params:
       PRODUCT_NAME: pivotal-mysql
-      ENV_FILE: ((foundation))/env/env.yml
+      ENV_FILE: env.yml

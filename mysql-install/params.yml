@@ -13,80 +13,78 @@ opsman_target: ((prod_opsman_target))
 opsman_user: ((prod_opsman_user))
 opsman_password: ((prod_opsman_password))
 opsman_skip_ssl_validation: true
-opsman_decryption_passphrase: prod_opsman_passphrase
+opsman_decryption_passphrase: ((prod_opsman_passphrase))
 mysql-config:
+  product-name: pivotal-mysql
   product-properties:
     .properties.allow_lower_case_table_names_via_config_param:
-      value: false # required
+      value: false
     .properties.audit_logging_enabled:
-      value: false # required
+      value: false
     .properties.backups_selector:
-      value: Azure # required
+      value: Azure Backups
     .properties.backups_selector.azure.account:
-      value: ((prod_azure_storage_account)) # required
+      value: ((prod_azure_storage_account))
     .properties.backups_selector.azure.container:
       value: ((prod_azure_storage_backup_container))
     .properties.backups_selector.azure.cron_schedule:
-      value: 0 */8 * * * # required
+      value: 0 */8 * * *
     .properties.backups_selector.azure.enable_email_alerts:
-      value: false # required
+      value: false
     .properties.backups_selector.azure.path:
       value: mysql-backups
     .properties.backups_selector.azure.storage_access_key:
       value: ((prod_azure_storage_key))
     .properties.canary_instances:
-      value: 0 # required
+      value: 0
     .properties.enable_lower_case_table_names:
-      value: false # required
+      value: false
     .properties.enable_read_only_admin:
-      value: false # required
+      value: false
     .properties.enable_secure_binding_credentials:
-      value: false # required
+      value: false
     .properties.enable_tls_selector:
-      value: disabled # required
+      value: disabled
     .properties.global_service_instance_limit:
-      value: 50 # required
+      value: 50
     .properties.local_infile:
-      value: false # required
+      value: false
     .properties.mysql_metrics_frequency:
-      value: 30 # required
+      value: 30
     .properties.plan1_selector:
-      value: Active # required
+      value: Active
     .properties.plan1_selector.active.access_dropdown:
-      value: enable # required
+      value: enable
     .properties.plan1_selector.active.az_multi_select:
-      value: null # required
+      value: ["null"]
     .properties.plan1_selector.active.description:
-      value: This plan provides a small dedicated MySQL instance. # required
+      value: This plan provides a small dedicated MySQL instance.
     .properties.plan1_selector.active.disk_size:
-      value: Automatic # required
+      value: "10240"
     .properties.plan1_selector.active.instance_limit:
       value: null
     .properties.plan1_selector.active.multi_node_deployment:
-      value: false # required
+      value: false
     .properties.plan1_selector.active.name:
-      value: db-small # required
+      value: db-small
     .properties.plan1_selector.active.vm_type:
-      value: Automatic # required
+      value: Standard_DS2_v2
     .properties.request_timeout:
-      value: 120 # required
+      value: 120
     .properties.simultaneous_upgrades:
-      value: 1 # required
+      value: 1
     .properties.syslog_migration_selector:
-      value: disabled # required
-    .properties.syslog_migration_selector.enabled.address:
-      value: null # required
-    .properties.syslog_migration_selector.enabled.ca_cert:
-      value: null
-    .properties.syslog_migration_selector.enabled.permitted_peer:
-      value: null
-    .properties.syslog_migration_selector.enabled.port:
-      value: null # required
-    .properties.syslog_migration_selector.enabled.tls_enabled:
-      value: true # required
-    .properties.syslog_migration_selector.enabled.transport_protocol:
-      value: tcp # required
+      value: disabled
     .properties.userstat:
-      value: false # required
+      value: false
     .properties.vm_extensions:
       value: null
+  network-properties:
+    network:
+      name: Deployment
+    other_availability_zones:
+    - name: "null"
+    service_network:
+      name: Services
+    singleton_availability_zone:
+      name: "null"
