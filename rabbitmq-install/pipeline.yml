@@ -152,11 +152,18 @@ jobs:
       OPSMAN_PASSWORD: ((opsman_password))
       OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
       OPSMAN_CONNECT_TIMEOUT: 1600
-  - task: apply-product-changes
+  - task: apply-rabbitmq-changes
     image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/apply-changes.yml
-    params:
-      ENV_FILE: env.yml
+    config:
+      platform: linux
+      inputs:
+        - name: env
+      run:
+        path: bash
+        args:
+          - "-c"
+          - |
+            om --env=env/env.yml apply-changes --product-name=((rabbitmq-config.product-name))
 
 - name: staged-rabbitmq-config
   plan:
