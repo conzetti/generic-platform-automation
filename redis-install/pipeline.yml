@@ -1,0 +1,192 @@
+resources:
+- name: pcf-automation-tasks
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: .*tasks-(.*).zip
+
+- name: pcf-automation-image
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: platform-automation-image-(.*).tgz
+
+- name: redisproduct
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    endpoint: ((s3.endpoint))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: p-redis-(.*).pivotal
+
+- name: xenial-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-xenial-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: pipeline-utilities
+  type: git
+  source:
+    uri: https://github.com/pivotalservices/pipeline-utilities.git
+
+jobs:
+- name: upload-and-stage-redis
+  serial: true
+  plan:
+  - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - get: xenial-stemcell-s3
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: redisproduct
+  - task: upload-stemcell
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/upload-stemcell.yml
+    input_mapping:
+      stemcell: xenial-stemcell-s3
+  - task: upload-and-stage-product
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
+    input_mapping:
+      product: redisproduct
+    params:
+      ENV_FILE: env.yml
+
+- name: configure-redis
+  serial: true
+  plan:
+  - aggregate:
+    - get: pipeline-utilities
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+      passed:
+      - upload-and-stage-redis
+      trigger: true
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+      OPSMAN_REQUEST_TIMEOUT: 600
+  - task: generate-redis-config
+    params:
+      REDIS_CONFIG: ((redis-config))
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pivotalservices/bosh2-docker
+      outputs:
+        - name: config
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          bosh int <(echo "${REDIS_CONFIG}") > config/redis-config.yml
+  - task: configure-redis
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/configure-product.yml
+    params:
+      CONFIG_FILE: redis-config.yml
+      ENV_FILE: env.yml
+      
+- name: apply-product-changes
+  serial: true
+  plan:
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+      passed:
+      - configure-redis
+      trigger: false
+    - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+  - task: apply-redis-changes
+    image: pcf-automation-image
+    config:
+      platform: linux
+      inputs:
+        - name: env
+      run: 
+        path: bash
+        args:
+          - "-c"
+          - |
+            om --env=env/env.yml apply-changes --product-name=p-redis
+
+- name: staged-redis-config
+  plan:
+  - aggregate:
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+  - task: staged-config
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/staged-config.yml
+    params:
+      PRODUCT_NAME: p-redis
+      ENV_FILE: env.yml
