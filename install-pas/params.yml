@@ -196,7 +196,7 @@ pas_config:
     .properties.saml_signature_algorithm:
       value: SHA256
     .properties.secure_service_instance_credentials:
-      value: false
+      value: true
     .properties.security_acknowledgement:
       value: X
     .properties.smoke_tests:
@@ -226,7 +226,9 @@ pas_config:
     .properties.system_database:
       value: internal_mysql
     .properties.tcp_routing:
-      value: disable
+      value: enable
+    .properties.tcp_routing.enable.reservable_ports:
+      value: 1024-1123
     .properties.uaa:
       value: internal
     .properties.uaa.internal.password_expires_after_months:
@@ -260,7 +262,7 @@ pas_config:
     .router.enable_zipkin:
       value: true
     .router.frontend_idle_timeout:
-      value: 900
+      value: 200
     .router.lb_healthy_threshold:
       value: 20
     .router.request_timeout_in_seconds:
@@ -324,7 +326,7 @@ pas_config:
         id: automatic
       internet_connected: false
     credhub:
-      instances: automatic
+      instances: 2
       instance_type:
         id: automatic
       internet_connected: false
@@ -351,7 +353,7 @@ pas_config:
         id: automatic
       internet_connected: false
     ha_proxy:
-      instances: automatic
+      instances: 0
       instance_type:
         id: automatic
       internet_connected: false
@@ -409,7 +411,7 @@ pas_config:
         id: automatic
       internet_connected: false
     tcp_router:
-      instances: 0
+      instances: automatic
       persistent_disk:
         size_mb: automatic
       instance_type:
