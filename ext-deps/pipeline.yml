@@ -198,6 +198,24 @@ resources:
     secret_access_key: ((s3.secret_access_key))
     endpoint: ((s3.endpoint))
 
+- name: healthwatch-stemcell
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: stemcells
+    product_version: ((healthwatch_stemcell_version))
+    sort_by: semver
+
+- name: healthwatch-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-3541.(.*)-azure-hyperv-ubuntu-trusty-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
 - name: xenial-stemcell
   type: pivnet
   source: 
@@ -320,6 +338,10 @@ jobs:
        params:
          globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz"] 
        trigger: true
+     - get: healthwatch-stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz"]
+       trigger: true
   - aggregate:
      - put: stemcell-s3
        params:
@@ -327,4 +349,7 @@ jobs:
      - put: xenial-stemcell-s3
        params:
          file: xenial-stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz
+     - put: healthwatch-stemcell-s3
+       params:
+         file: healthwatch-stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz
    
