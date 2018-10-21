@@ -1,0 +1,15 @@
+---
+s3:
+  access_key_id: ((s3_access_key_id))
+  region_name: ((s3_region_name))
+  buckets:
+    product: ((product_bucket))
+    config: ((config_bucket))
+  secret_access_key: ((s3_secret_access_key))
+  endpoint: ((s3_endpoint))
+opsman_target: ((opsman_target))
+opsman_user: ((opsman_user))
+opsman_password: ((opsman_password))
+opsman_skip_ssl_validation: true
+opsman_decryption_passphrase: ((opsman_passphrase))
+pivnet_token: ((pivnet_token))
