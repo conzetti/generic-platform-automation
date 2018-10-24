@@ -1,54 +1,154 @@
 ---
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Globals                                                           │
+#└───────────────────────────────────────────────────────────────────┘
 s3:
-  access_key_id: ((prod_s3_access_key_id))
-  region_name: ((prod_s3_region_name))
+  access_key_id: ((s3_access_key_id))
+  region_name: ((s3_region_name))
   buckets:
-    product: ((prod_pcf_product_bucket))
-    config: ((prod_pcf_config_bucket))
-  secret_access_key: ((prod_s3_secret_access_key))
-  endpoint: ((prod_s3_endpoint))
-pivnet_token: ((pivnet_token))
-opsman_version:  ((prod_opsman_version))
+    product: ((s3_product_bucket))
+    config: ((s3_config_bucket))
+  secret_access_key: ((s3_secret_access_key))
+  endpoint: ((s3_endpoint))
 opsman_image_wildcard: "OpsManager*.yml"
-pcf_automation_version: 0.0.1-rc.214
-pas_version: ((prod_pas_version))
-healthwatch_version: ((prod_healthwatch_version))
-opsman_image_s3_versioned_regexp: ((prod_opsman_image_s3_versioned_regexp))
-opsman_target: ((prod_opsman_target))
-opsman_skip_ssl_validation: true
-opsman_user: ((prod_opsman_user))
-opsman_password: ((prod_opsman_password))
-opsman_decryption_passphrase: ((prod_opsman_passphrase))
-director_client_id: ((prod_director_client_id))
-director_client_secret: ((prod_director_client_secret))
-director_default_security_group: ((prod_director_security_group))
-director_environment: ((prod_director_environment))
-director_resource_group_name: ((prod_director_resource_group_name))
-director_ssh_public_key: ((prod_director_ssh_public_key))
-director_ssh_private_key: ((prod_director_ssh_private_key))
-director_subscription_id: ((prod_director_subscription_id))
-director_tenant_id: ((prod_director_tenant_id))
-net_dns: 168.63.129.16
-net_mgmt_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-management-subnet
-net_mgmt_cidr: 10.0.8.0/26
-net_mgmt_gateway: 10.0.8.1
-net_mgmt_reserved_range: 10.0.8.1-10.0.8.11
-net_dep_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-pas-subnet
-net_dep_cidr: 10.0.0.0/22
-net_dep_gateway: 10.0.0.1
-net_dep_reserved_range: 10.0.0.1-10.0.0.9
-net_svcs_iaas_id: pcf-dxc-com-virtual-network/pcf-dxc-com-services-subnet
-net_svcs_cidr: 10.0.4.0/22
-net_svcs_gateway: 10.0.4.1
-net_svcs_reserved_range: 10.0.4.1-10.0.4.9
-iaas_configuration_region: "East US"
-opsman_public_ip: 40.117.89.161
-opsman_private_ip: 10.0.8.11
-net_config_network: pcf-dxc-com-virtual-network
-net_config_mgmt_subnet: pcf-dxc-com-management-subnet
-director_storage_account_name: ((prod_azure_storage_account))
-iaas_configuration_storage_account: ((prod_azure_storage_account))
-iaas_configuration_storage_key: ((prod_azure_storage_key))
-opsman_vm_name: opsman
-opsman_boot_disk_size: 150
-opsman_security_group: ((prod_opsman_security_group))
+opsman_image_s3_versioned_regexp: "OpsManager2.3-(.*).146onAzure.yml"
+
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Rendered into auth.yml                                            │
+#└───────────────────────────────────────────────────────────────────┘
+auth_config:
+  username: ((opsman_user))
+  password: ((opsman_password))
+  decryption-passphrase: ((opsman_decryption_passphrase))
+
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Rendered into env.yml                                             │
+#└───────────────────────────────────────────────────────────────────┘
+env_config:
+  target: ((opsman_target))
+  skip-ssl-validation: true
+  username: ((opsman_user))
+  password: ((opsman_password))
+  connect-timeout: 1600
+  request-timeout: 600
+
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Rendered into opsman.yml                                          │
+#└───────────────────────────────────────────────────────────────────┘
+opsman_config:
+  opsman-configuration:
+    azure:
+      subscription_id: ((iaas_configuration_subscription_id))
+      resource_group: ((iaas_configuration_resource_group_name))
+      tenant_id: ((iaas_configuration_tenant_id))
+      client_id: ((iaas_configuration_client_id))
+      client_secret: ((iaas_configuration_client_secret))
+      location: "East US"
+      public_ip: ((opsman_public_ip))
+      private_ip: ((opsman_private_ip))
+      container: opsmanager
+      network_security_group: ((iaas_configuration_opsman_security_group))
+      vpc_network: ((vpc_network))
+      vpc_subnet: ((net_mgmt_subnet))
+      storage_account: ((iaas_configuration_storage_account))
+      storage_key: ((iaas_configuration_storage_key))
+      ssh_public_key: ((iaas_configuration_ssh_public_key))
+      vm_name: opsmanager
+      boot_disk_size: 150
+
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Rendered into director.yml                                        │
+#└───────────────────────────────────────────────────────────────────┘
+director_config:
+  director-configuration:
+    allow_legacy_agents: true
+    blobstore_type: local
+    bosh_recreate_on_next_deploy: false
+    bosh_recreate_persistent_disks_on_next_deploy: false
+    database_type: internal
+    director_worker_count: 5
+    encryption:
+      keys: []
+      providers: []
+    excluded_recursors: []
+    hm_emailer_options:
+      enabled: false
+    hm_pager_duty_options:
+      enabled: false
+    identification_tags: {))
+    keep_unreachable_vms: false
+    local_blobstore_options:
+      tls_enabled: true
+    ntp_servers_string: ntp.ubuntu.com
+    post_deploy_enabled: false
+    resurrector_enabled: true
+    retry_bosh_deploys: true
+  iaas-configuration:
+    bosh_storage_account_name: ((iaas_configuration_storage_account))
+    client_id: ((iaas_configuration_client_id))
+    client_secret: ((iaas_configuration_client_secret))
+    default_security_group: ((iaas_configuration_default_security_group))
+    deployments_storage_account_name: ((iaas_configuration_deployments_storage_account_name))
+    environment: ((iaas_configuration_environment))
+    resource_group_name: ((iaas_configuration_resource_group_name))
+    ssh_public_key: ((iaas_configuration_ssh_public_key))
+    ssh_private_key: ((iaas_configuration_ssh_private_key))
+    cloud_storage_type: managed_disks
+    storage_account_type: Standard_LRS
+    subscription_id: ((iaas_configuration_subscription_id))
+    tenant_id: ((iaas_configuration_tenant_id))
+  network-assignment:
+    network:
+      name: Management
+    other_availability_zones:
+    - name: "null"
+    singleton_availability_zone:
+      name: "null"
+  networks-configuration:
+    icmp_checks_enabled: false
+    networks:
+    - name: Management
+      subnets:
+      - iaas_identifier: ((net_mgmt_iaas_id))
+        cidr: 10.0.8.0/20
+        dns: 168.63.129.16
+        gateway: 10.0.8.1
+        reserved_ip_ranges: 10.0.8.1-10.0.8.11
+        availability_zone_names:
+        - "null"
+    - name: Deployment
+      subnets:
+      - iaas_identifier: ((net_dep_iaas_id))
+        cidr: 10.0.0.0/22
+        dns: 168.63.129.16
+        gateway: 10.0.0.1
+        reserved_ip_ranges: 10.0.0.1-10.0.0.9
+        availability_zone_names:
+        - "null"
+    - name: Services
+      subnets:
+      - iaas_identifier: ((net_svcs_iaas_id))
+        cidr: 10.0.4.0/22
+        dns: 168.63.129.16
+        gateway: 10.0.4.1
+        reserved_ip_ranges: 10.0.4.1-10.0.4.9
+        availability_zone_names:
+        - "null"
+  resource-configuration:
+    compilation:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    director:
+      instances: automatic
+      persistent_disk:
+        size_mb: "102400"
+      instance_type:
+        id: automatic
+      internet_connected: false
+  security-configuration:
+    generate_vm_passwords: true
+  syslog-configuration:
+    enabled: false
+  vmextensions-configuration: []
