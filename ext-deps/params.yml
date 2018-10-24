@@ -1,0 +1,24 @@
+---
+s3:
+  access_key_id: ((prod_s3_access_key_id))
+  region_name: ((prod_s3_region_name))
+  buckets:
+    product: ((prod_pcf_product_bucket))
+    config: ((prod_pcf_config_bucket))
+  secret_access_key: ((prod_s3_secret_access_key))
+  endpoint: ((prod_s3_endpoint))
+pivnet_token: ((pivnet_token))
+mysql_version: ((mysql_version))
+redis_version: ((redis_version))
+spring_cloud_services: ((spring_cloud_services_version))
+rabbitmq_version: ((rabbitmq_version))
+opsman_version:  ((prod_opsman_version))
+opsman_image_wildcard: "OpsManager*.yml"
+pcf_automation_version: 0.0.1-rc.214
+pas_version: ((prod_pas_version))
+healthwatch_version: ((healthwatch_version))
+opsman_image_s3_versioned_regexp: ((prod_opsman_image_s3_versioned_regexp))
+metrics_version: ((metrics_version))
+stemcell_version: ((stemcell_version))
+xenial_stemcell_version: ((xenial_stemcell_version))
+healthwatch_stemcell_version: 3541.*

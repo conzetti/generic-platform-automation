@@ -1,0 +1,355 @@
+---
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+
+- name: platform-automation-pivnet
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: platform-automation
+    product_version: ((pcf_automation_version))
+    sort_by: semver
+
+- name: platform-automation-tasks-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: tasks-(.*).zip
+    endpoint: ((s3.endpoint))
+
+- name: platform-automation-image-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    regexp: image-(.*).tgz
+    endpoint: ((s3.endpoint))
+
+- name: pas-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: elastic-runtime
+    product_version: ((pas_version))
+    sort_by: semver
+
+- name: pas-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: cf-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: healthwatch-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: p-healthwatch
+    product_version: ((healthwatch_version))
+    sort_by: semver
+
+- name: healthwatch-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: p-healthwatch-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: mysql-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: pivotal-mysql
+    product_version: ((mysql_version))
+    sort_by: semver
+
+- name: mysql-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: pivotal-mysql-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: rabbitmq-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: p-rabbitmq
+    product_version: ((rabbitmq_version))
+    sort_by: semver
+
+- name: rabbitmq-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: p-rabbitmq-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: redis-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: p-redis
+    product_version: ((redis_version))
+    sort_by: semver
+
+- name: redis-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: p-redis-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: spring-cloud-services-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: p-spring-cloud-services
+    product_version: ((spring_cloud_services_version))
+    sort_by: semver
+
+- name: spring-cloud-services-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: p-spring-cloud-services-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: metrics-product
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: apm
+    product_version: ((metrics_version))
+    sort_by: semver
+
+- name: metrics-product-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: apm-(.*).pivotal
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: opsman-image
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: ops-manager
+    product_version: ((opsman_version))
+    sort_by: semver
+
+- name: opsman-image-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: ((opsman_image_s3_versioned_regexp))
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: stemcell
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: stemcells
+    product_version: ((stemcell_version))
+    sort_by: semver
+
+- name: stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-trusty-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: healthwatch-stemcell
+  type: pivnet
+  source:
+    api_token: ((pivnet_token))
+    product_slug: stemcells
+    product_version: ((healthwatch_stemcell_version))
+    sort_by: semver
+
+- name: healthwatch-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-3541.(.*)-azure-hyperv-ubuntu-trusty-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+- name: xenial-stemcell
+  type: pivnet
+  source: 
+    api_token: ((pivnet_token))
+    product_slug: stemcells-ubuntu-xenial
+    product_version: ((xenial_stemcell_version))
+    sort_byt: semver
+
+- name: xenial-stemcell-s3
+  type: s3
+  source:
+    access_key_id: ((s3.access_key_id))
+    bucket: ((s3.buckets.product))
+    regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-xenial-go_agent.tgz
+    region_name: ((s3.region_name))
+    secret_access_key: ((s3.secret_access_key))
+    endpoint: ((s3.endpoint))
+
+jobs:
+- name: get-platform-automation
+  plan:
+  - get: platform-automation-pivnet
+    trigger: true
+  - aggregate:
+    - put: platform-automation-tasks-s3
+      params:
+        file: platform-automation-pivnet/*tasks-*.zip
+    - put: platform-automation-image-s3
+      params:
+        file: platform-automation-pivnet/*image-*.tgz
+
+- name: get-pas-product
+  plan:
+  - get: pas-product
+    params:
+      globs: ["cf*.pivotal"]
+    trigger: true
+  - put: pas-product-s3
+    params:
+      file: pas-product/cf-*.pivotal
+
+- name: get-healthwatch-product
+  plan:
+  - get: healthwatch-product
+    params:
+      globs: ["p-healthwatch*.pivotal"]
+    trigger: true
+  - put: healthwatch-product-s3
+    params:
+      file: healthwatch-product/p-healthwatch-*.pivotal
+
+- name: get-mysql-product
+  plan:
+  - get: mysql-product
+    params:
+      globs: ["pivotal-mysql*.pivotal"]
+    trigger: true
+  - put: mysql-product-s3
+    params:
+      file: mysql-product/pivotal-mysql-*.pivotal
+
+- name: get-rabbitmq-product
+  plan:
+  - get: rabbitmq-product
+    params:
+      globs: ["p-rabbitmq*.pivotal"]
+    trigger: true
+  - put: rabbitmq-product-s3
+    params:
+      file: rabbitmq-product/p-rabbitmq-*.pivotal
+
+- name: get-redis-product
+  plan:
+  - get: redis-product
+    params:
+      globs: ["p-redis*.pivotal"]
+    trigger: true
+  - put: redis-product-s3
+    params:
+      file: redis-product/p-redis-*.pivotal
+
+- name: get-spring-cloud-services-product
+  plan:
+  - get: spring-cloud-services-product
+    params:
+      globs: ["p-spring-cloud-services*.pivotal"]
+    trigger: true
+  - put: spring-cloud-services-product-s3
+    params:
+      file: spring-cloud-services-product/p-spring-cloud-services-*.pivotal
+
+- name: get-metrics-product
+  plan:
+  - get: metrics-product
+    params:
+      globs: ["apm*.pivotal"]
+    trigger: true
+  - put: metrics-product-s3
+    params:
+      file: metrics-product/apm-*.pivotal
+
+- name: get-opsman-image
+  plan:
+  - get: opsman-image
+    params:
+      globs: ["*Azure*.yml"]
+    trigger: true
+  - put: opsman-image-s3
+    params:
+      file: opsman-image/((opsman_image_wildcard))
+
+- name: get-stemcells
+  plan:
+  - aggregate:
+     - get: stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz"]
+       trigger: true
+     - get: xenial-stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz"] 
+       trigger: true
+     - get: healthwatch-stemcell
+       params:
+         globs: ["bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz"]
+       trigger: true
+  - aggregate:
+     - put: stemcell-s3
+       params:
+         file: stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz
+     - put: xenial-stemcell-s3
+       params:
+         file: xenial-stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-xenial-go_agent.tgz
+     - put: healthwatch-stemcell-s3
+       params:
+         file: healthwatch-stemcell/bosh-stemcell-*-azure-hyperv-ubuntu-trusty-go_agent.tgz
+   
