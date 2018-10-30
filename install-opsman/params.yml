@@ -10,7 +10,6 @@ s3:
     config: ((s3_config_bucket))
   secret_access_key: ((s3_secret_access_key))
   endpoint: ((s3_endpoint))
-pivnet_token: ((pivnet_token))
 opsman_image_wildcard: "OpsManager*.yml"
 opsman_image_s3_versioned_regexp: "OpsManager2.3-(.*).146onAzure.yml"
 
