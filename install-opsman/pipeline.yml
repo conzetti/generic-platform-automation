@@ -1,4 +1,17 @@
 ---
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Resources for Director/Operations Manager                         │
+#│                                                                   │
+#├ S3:                                                               │
+#│ ├── PCF Automation task                                           │
+#│ ├── PCF Automation docker image                                   │
+#│ ├── Operations Manager state file                                 │
+#│ ├── Operations Manager installation.zip                           │
+#│ └── Operations Manager image file                                 │
+#├ Time:                                                             │
+#│ ├── One-time trigger                                              │
+#│ └── Daily trigger                                                 │
+#└───────────────────────────────────────────────────────────────────┘
 resources:
 - name: pcf-automation-tasks
   type: s3
@@ -51,62 +64,6 @@ resources:
     secret_access_key: ((s3.secret_access_key))
     endpoint: ((s3.endpoint))
 
-
-- name: stemcell
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.product))
-    regexp: bosh-stemcell-(.*)-ubuntu-trusty-go_agent.tgz
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
-
-- name: pas-product
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.product))
-    regexp: cf-(.*).pivotal
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
-
-- name: healthwatch-product
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.product))
-    regexp: p-healthwatch-(.*).pivotal
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
-
-- name: director-config
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.config))
-    regexp: (director.*).yml
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
-
-- name: opsman-config
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.config))
-    regexp: (opsman.*).yml
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
-
-- name: pipeline-utilities 
-  type: git
-  source:
-    uri: https://github.com/pivotalservices/pipeline-utilities.git
-
 - name: one-time-trigger
   type: time
   source:
@@ -116,14 +73,28 @@ resources:
   type: time
   source:
     interval: 24h
-
+#┌───────────────────────────────────────────────────────────────────┐
+#├ Jobs for Director/Operations Manager                              │
+#│                                                                   │
+#├ Install Operations Manager & BOSH Director:                       │
+#│ ├── Generate configurations                                       │
+#│ ├── Create Operations Manager VM                                  │
+#│ ├── Configure Operations Manager authentication (basic)           │
+#│ ├── Configure BOSH director                                       │
+#│ └── Operations Manager image file                                 │
+#├ Export Operations Manager Installation:                           │
+#│ ├── Generate environment configuration                            │
+#│ └── Export installation.zip                                       │
+#├ Upgrade Operations Manager:                                       │
+#│ ├── Generate configurations                                       │
+#│ └── Upgrade Operations Manager                                    │
+#└───────────────────────────────────────────────────────────────────┘
 jobs:
-- name: install-opsman
+- name: install-opsman-and-director
   serial: true
   serial_groups: [ install ]
   plan:
   - aggregate:
-    - get: pipeline-utilities
     - get: pcf-automation-image
       params:
         unpack: true
@@ -134,36 +105,16 @@ jobs:
         unpack: true
     - get: opsman-image
     - get: state
-    - get: director-config
-    - get: opsman-config
-  - aggregate:
-    - task: create-env-file
-      file: pipeline-utilities/tasks/create-env-file.yml
-      params:
-        OPSMAN_TARGET: ((opsman_target))
-        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-        OPSMAN_USERNAME: ((opsman_user))
-        OPSMAN_PASSWORD: ((opsman_password))
-        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-        OPSMAN_CONNECT_TIMEOUT: 1600
-        OPSMAN_REQUEST_TIMEOUT: 600
-    - task: create-auth-file
-      file: pipeline-utilities/tasks/create-auth-file.yml
-      params:
-        OPSMAN_TARGET: ((opsman_target))
-        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-        OPSMAN_USERNAME: ((opsman_user))
-        OPSMAN_PASSWORD: ((opsman_password))
-        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-        OPSMAN_CONNECT_TIMEOUT: 1600
-        OPSMAN_REQUEST_TIMEOUT: 600
-  - task: generate-opsman-and-director-config
+  - task: generate-configs
     params:
       OPSMAN_CONFIG: ((opsman_config))
       DIRECTOR_CONFIG: ((director_config))
+      AUTH_CONFIG: ((auth_config))
+      ENV_CONFIG: ((env_config))
     config:
       outputs:
         - name: config
+        - name: env
       platform: linux
       image_resource:
         type: docker-image
@@ -174,8 +125,10 @@ jobs:
         args:
         - "-c"
         - |
-          bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
+          bosh int <(echo "${AUTH_CONFIG}") > config/auth.yml
           bosh int <(echo "${DIRECTOR_CONFIG}") > config/director.yml
+          bosh int <(echo "${ENV_CONFIG}") > env/env.yml
+          bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
   - task: create-vm
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/create-vm.yml
@@ -185,21 +138,6 @@ jobs:
       put: state
       params:
         file: generated-state/state.yml
-  - task: update-cached-state
-    config:
-      inputs:
-        - name: state
-        - name: generated-state
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: pcfnorm/rootfs
-      run:
-        path: bash
-        args:
-        - -c
-        - cp generated-state/state.yml state/state.yml
   - task: configure-authentication
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-authentication.yml
@@ -215,7 +153,6 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: pipeline-utilities
     - get: daily-trigger
       trigger: true
     - get: pcf-automation-image
@@ -224,69 +161,9 @@ jobs:
     - get: pcf-automation-tasks
       params:
         unpack: true
-  - task: create-env-file
-    file: pipeline-utilities/tasks/create-env-file.yml
-    params:
-      OPSMAN_TARGET: ((opsman_target))
-      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-      OPSMAN_USERNAME: ((opsman_user))
-      OPSMAN_PASSWORD: ((opsman_password))
-      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-      OPSMAN_CONNECT_TIMEOUT: 1600
-      OPSMAN_REQUEST_TIMEOUT: 600
-  - task: export-installation
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/export-installation.yml
-  - put: installation
-    params:
-      file: installation/installation.zip
-
-- name: upgrade-opsman
-  serial: true
-  serial_groups: [ install ]
-  plan:
-  - aggregate:
-    - get: one-time-trigger
-      passed: [ install-opsman ]
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-    - get: opsman-image
-      trigger: true
-    - get: installation
-      passed: [ export-installation ]
-    - get: state
-    - get: opsman-config
-    - get: pipeline-utilities
-    - get: director-config
-  - aggregate:
-    - task: create-env-file
-      file: pipeline-utilities/tasks/create-env-file.yml
-      params:
-        OPSMAN_TARGET: ((opsman_target))
-        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-        OPSMAN_USERNAME: ((opsman_user))
-        OPSMAN_PASSWORD: ((opsman_password))
-        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-        OPSMAN_CONNECT_TIMEOUT: 1600
-        OPSMAN_REQUEST_TIMEOUT: 600
-    - task: create-auth-file
-      file: pipeline-utilities/tasks/create-auth-file.yml
-      params:
-        OPSMAN_TARGET: ((opsman_target))
-        OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
-        OPSMAN_USERNAME: ((opsman_user))
-        OPSMAN_PASSWORD: ((opsman_password))
-        OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
-        OPSMAN_CONNECT_TIMEOUT: 1600
-        OPSMAN_REQUEST_TIMEOUT: 600
-  - task: generate-opsman-and-director-config
+  - task: generate-env
     params:
       OPSMAN_CONFIG: ((opsman_config))
-      DIRECTOR_CONFIG: ((director_config))
     config:
       outputs:
         - name: config
@@ -301,7 +178,51 @@ jobs:
         - "-c"
         - |
           bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
-          bosh int <(echo "${DIRECTOR_CONFIG}") > config/director.yml
+  - task: export-installation
+    image: pcf-automation-image
+    file: pcf-automation-tasks/tasks/export-installation.yml
+  - put: installation
+    params:
+      file: installation/installation.zip
+
+- name: upgrade-opsman
+  serial: true
+  serial_groups: [ install ]
+  plan:
+  - aggregate:
+    - get: one-time-trigger
+      passed: [ install-opsman-and-director ]
+    - get: pcf-automation-image
+      params:
+        unpack: true
+    - get: pcf-automation-tasks
+      params:
+        unpack: true
+    - get: opsman-image
+      trigger: true
+    - get: installation
+      passed: [ export-installation ]
+    - get: state
+  - task: generate-configs
+    params:
+      ENV_CONFIG: ((env_config))
+      OPSMAN_CONFIG: ((opsman_config))
+    config:
+      outputs:
+        - name: config
+        - name: env
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pivotalservices/bosh2-docker
+      run:
+        path: bash
+        args:
+        - "-c"
+        - |
+          bosh int <(echo "${ENV_CONFIG}") > env/env.yml
+          bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
   - task: upgrade-opsman
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/upgrade-opsman.yml
@@ -313,133 +234,3 @@ jobs:
       put: state
       params:
         file: generated-state/state.yml
-
-- name: upload-and-stage-pas
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-    - get: pas-product
-  - task: upload-and-stage-product
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
-    input_mapping:
-      product: pas-product
-    params:
-      CONFIG_FILE: cf.yml
-
-- name: configure-pas
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-  - task: configure-pas
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/configure-product.yml
-    params:
-      CONFIG_FILE: cf.yml
-      VARS_FILES: vars/cf-vars.yml
-
-- name: upload-stemcell
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-    - get: stemcell
-      trigger: true
-  - task: upload-stemcell
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-stemcell.yml
-
-- name: upload-and-stage-healthwatch
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-    - get: healthwatch-product
-  - task: upload-and-stage-product
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
-    input_mapping:
-      product: healthwatch-product
-    params:
-      CONFIG_FILE: healthwatch.yml
-- name: configure-healthwatch
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-  - task: configure-healthwatch
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/configure-product.yml
-    params:
-      CONFIG_FILE: healthwatch.yml
-      VARS_FILE:
-- name: apply-product-changes
-  serial: true
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-  - task: apply-product-changes
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/apply-changes.yml
-
-- name: staged-pas-config
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-  - task: staged-config
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/staged-config.yml
-    params:
-      PRODUCT_NAME: cf
-
-- name: staged-healthwatch-config
-  plan:
-  - aggregate:
-    - get: pcf-automation-image
-      params:
-        unpack: true
-    - get: pcf-automation-tasks
-      params:
-        unpack: true
-  - task: staged-config
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/staged-config.yml
-    params:
-      PRODUCT_NAME: p-healthwatch
