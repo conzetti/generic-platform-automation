@@ -27,17 +27,7 @@ resources:
     region_name: ((s3.region_name))
     endpoint: ((s3.endpoint))
     secret_access_key: ((s3.secret_access_key))
-    regexp: ((config.product-name))-(.*).pivotal
-
-- name: stemcell
-  type: s3
-  source:
-    access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.product))
-    regexp: ((stemcell_regex))
-    region_name: ((s3.region_name))
-    secret_access_key: ((s3.secret_access_key))
-    endpoint: ((s3.endpoint))
+    regexp: ((product_regexp))
 
 - name: pipeline-utilities
   type: git
@@ -45,38 +35,53 @@ resources:
     uri: https://github.com/pivotalservices/pipeline-utilities.git
 
 jobs:
-- name: upload-stemcell-dependency
+- name: download-from-pivnet-and-upload-to-om
   plan:
-  - task: download-stemcell-from-pivnet
+  - get: pipeline-utilities
+  - task: create-env-file
+    file: pipeline-utilities/tasks/create-env-file.yml
+    params:
+      OPSMAN_TARGET: ((opsman_target))
+      OPSMAN_SKIP_SSL_VALIDATION: ((opsman_skip_ssl_validation))
+      OPSMAN_USERNAME: ((opsman_user))
+      OPSMAN_PASSWORD: ((opsman_password))
+      OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
+      OPSMAN_CONNECT_TIMEOUT: 1600
+  - task: download-product-from-pivnet
     params:
       PIVNET_TOKEN: ((pivnet_token))
+      PRODUCT_NAME: ((product_slug_name))
+      PRODUCT_VERSION: ((product_version))
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
           repository: pmatuska/pivnet-cli
-          tag: v1
-      outputs:
-        - name: stemcells
+          tag: v2
+      inputs:
+        - name: env
       run:
         path: bash
         args:
         - "-c"
         - |
-          cd stemcells
           pivnet login --api-token=${PIVNET_TOKEN}
-          if [ `pivnet release-dependencies -p ((config.product-name)) -r ((product_version))| grep -c Xenial` -gt 0 ]
+          if [ `pivnet release-dependencies -p ${PRODUCT_NAME} -r ${PRODUCT_VERSION}| grep -c Xenial` -gt 0 ]
           then
-            STEMCELL_TYPE=stemcell-ubuntu-xenial
+            STEMCELL_TYPE=stemcells-ubuntu-xenial
           else
-            STEMCELL_TYPE=stemcell
+            STEMCELL_TYPE=stemcells
           fi
-          STEMCELL_VER=`pivnet release-dependencies -p ((config.product-name)) -r ((product_version))| grep -i Stemcells| awk -F"|" '{ print $3 }'| sort -rn| head -1| sed -e 's/\ //g'`
-          pivnet download-product-files -p stemcells -r ${STEMCELL_VER} -g "*azure*" --accept-eula
-  - put: stemcell
-    params:
-      file: stemcells/*azure* 
+          STEMCELL_VER=`pivnet release-dependencies -p ${PRODUCT_NAME} -r ${PRODUCT_VERSION}| grep -i Stemcells| awk -F"|" '{ print $3 }'| sort -rn| head -1| sed -e 's/\ //g'`
+          STEMCELL_EXISTS=`om --env env/env.yml curl --path /api/v0/stemcell_assignments | jq '.. | .version? // empty'| grep -c ${STEMCELL_VER}`
+          if [ ${STEMCELL_EXISTS} -lt 1 ]
+          then
+            pivnet download-product-files -p ${STEMCELL_TYPE} -r ${STEMCELL_VER} -g "*azure*" --accept-eula
+            om --env env/env.yml upload-stemcell -s *.tgz
+          else
+            echo "Stemcell is already uploaded in OM."
+          fi
 
 - name: upload-and-stage-((config.product-name))
   serial: true
@@ -91,8 +96,7 @@ jobs:
       OPSMAN_PASSWORD: ((opsman_password))
       OPSMAN_DECRYPTION_PASSPHRASE: ((opsman_decryption_passphrase))
       OPSMAN_CONNECT_TIMEOUT: 1600
-      OPSMAN_REQUEST_TIMEOUT: 600
-  - get: stemcell
+      OPSMAN_REQUEST_TIMEOUT: 1800
   - aggregate:
     - get: pcf-automation-image
       params:
@@ -101,11 +105,6 @@ jobs:
       params:
         unpack: true
     - get: product
-  - task: upload-stemcell
-    image: pcf-automation-image
-    file: pcf-automation-tasks/tasks/upload-stemcell.yml
-    input_mapping:
-      stemcell: stemcell
   - task: upload-and-stage-product
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/upload-and-stage-product.yml
@@ -161,7 +160,7 @@ jobs:
     params:
       CONFIG_FILE: ((config.product-name))-config.yml
       ENV_FILE: env.yml
-      
+
 - name: apply-product-changes
   serial: true
   plan:
