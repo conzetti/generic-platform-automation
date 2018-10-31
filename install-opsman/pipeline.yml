@@ -110,6 +110,7 @@ jobs:
       OPSMAN_CONFIG: ((opsman_config))
       DIRECTOR_CONFIG: ((director_config))
       AUTH_CONFIG: ((auth_config))
+      ENV_CONFIG: ((env_config))
     config:
       outputs:
         - name: config
@@ -137,7 +138,7 @@ jobs:
       put: state
       params:
         file: generated-state/state.yml
-   - task: configure-authentication
+  - task: configure-authentication
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-authentication.yml
     attempts: 10
@@ -190,7 +191,7 @@ jobs:
   plan:
   - aggregate:
     - get: one-time-trigger
-      passed: [ install-opsman ]
+      passed: [ install-opsman-and-director ]
     - get: pcf-automation-image
       params:
         unpack: true
@@ -202,8 +203,6 @@ jobs:
     - get: installation
       passed: [ export-installation ]
     - get: state
-    - get: opsman-config
-    - get: director-config
   - task: generate-configs
     params:
       ENV_CONFIG: ((env_config))

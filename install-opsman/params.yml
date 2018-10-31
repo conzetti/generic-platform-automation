@@ -6,18 +6,17 @@ s3:
   access_key_id: ((s3_access_key_id))
   region_name: ((s3_region_name))
   buckets:
-    product: ((s3_product_bucket))
-    config: ((s3_config_bucket))
+    product: ((product_bucket))
+    config: ((config_bucket))
   secret_access_key: ((s3_secret_access_key))
   endpoint: ((s3_endpoint))
-opsman_image_wildcard: "OpsManager*.yml"
 opsman_image_s3_versioned_regexp: "OpsManager2.3-(.*).146onAzure.yml"
 
 #┌───────────────────────────────────────────────────────────────────┐
 #├ Rendered into auth.yml                                            │
 #└───────────────────────────────────────────────────────────────────┘
 auth_config:
-  username: ((opsman_user))
+  username: ((opsman_username))
   password: ((opsman_password))
   decryption-passphrase: ((opsman_decryption_passphrase))
 
@@ -27,7 +26,7 @@ auth_config:
 env_config:
   target: ((opsman_target))
   skip-ssl-validation: true
-  username: ((opsman_user))
+  username: ((opsman_username))
   password: ((opsman_password))
   connect-timeout: 1600
   request-timeout: 600
@@ -43,14 +42,14 @@ opsman_config:
       tenant_id: ((iaas_configuration_tenant_id))
       client_id: ((iaas_configuration_client_id))
       client_secret: ((iaas_configuration_client_secret))
-      location: "East US"
+      location: "Central US"
       public_ip: ((opsman_public_ip))
       private_ip: ((opsman_private_ip))
-      container: opsmanager
+      container: ((iaas_opsman_container))
       network_security_group: ((iaas_configuration_opsman_security_group))
       vpc_network: ((vpc_network))
       vpc_subnet: ((net_mgmt_subnet))
-      storage_account: ((iaas_configuration_storage_account))
+      storage_account: ((iaas_opsman_storage_account))
       storage_key: ((iaas_configuration_storage_key))
       ssh_public_key: ((iaas_configuration_ssh_public_key))
       vm_name: opsmanager
@@ -75,7 +74,7 @@ director_config:
       enabled: false
     hm_pager_duty_options:
       enabled: false
-    identification_tags: {))
+    identification_tags: {}
     keep_unreachable_vms: false
     local_blobstore_options:
       tls_enabled: true
@@ -110,28 +109,28 @@ director_config:
     - name: Management
       subnets:
       - iaas_identifier: ((net_mgmt_iaas_id))
-        cidr: 10.0.8.0/20
+        cidr: 10.1.8.0/26
         dns: 168.63.129.16
-        gateway: 10.0.8.1
-        reserved_ip_ranges: 10.0.8.1-10.0.8.11
+        gateway: 10.1.8.1
+        reserved_ip_ranges: 10.1.8.1-10.1.8.9
         availability_zone_names:
         - "null"
     - name: Deployment
       subnets:
       - iaas_identifier: ((net_dep_iaas_id))
-        cidr: 10.0.0.0/22
+        cidr: 10.1.0.0/22
         dns: 168.63.129.16
-        gateway: 10.0.0.1
-        reserved_ip_ranges: 10.0.0.1-10.0.0.9
+        gateway: 10.1.0.1
+        reserved_ip_ranges: 10.1.0.1-10.1.0.9
         availability_zone_names:
         - "null"
     - name: Services
       subnets:
       - iaas_identifier: ((net_svcs_iaas_id))
-        cidr: 10.0.4.0/22
+        cidr: 10.1.4.0/22
         dns: 168.63.129.16
-        gateway: 10.0.4.1
-        reserved_ip_ranges: 10.0.4.1-10.0.4.9
+        gateway: 10.1.4.1
+        reserved_ip_ranges: 10.1.4.1-10.1.4.9
         availability_zone_names:
         - "null"
   resource-configuration:
