@@ -1,20 +1,9 @@
 ---
-s3:
-  access_key_id: ((prod_s3_access_key_id))
-  region_name: ((prod_s3_region_name))
-  buckets:
-    product: ((prod_pcf_product_bucket))
-    config: ((prod_pcf_config_bucket))
-  secret_access_key: ((prod_s3_secret_access_key))
-  endpoint: ((prod_s3_endpoint))
-pivnet_token: ((pivnet_token))
-redis_version: ((redis_version))
-opsman_target: ((prod_opsman_target))
-opsman_user: ((prod_opsman_user))
-opsman_password: ((prod_opsman_password))
-opsman_skip_ssl_validation: true
-opsman_decryption_passphrase: ((prod_opsman_passphrase))
-redis-config:
+product_file: p-redis-*.pivotal
+product_regexp: p-redis-(.*).pivotal
+product_version: ((redis_version))
+product_slug_name: p-redis
+config:
   product-name: p-redis
   product-properties:
     .cf-redis-broker.redis_maxmemory:
