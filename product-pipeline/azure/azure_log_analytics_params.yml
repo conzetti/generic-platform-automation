@@ -1,0 +1,68 @@
+---
+product_file: azure-log-analytics-nozzle-*.pivotal
+product_regexp: azure-log-analytics-nozzle-(.*).pivotal
+product_version: ((azure_log_analytics_version))
+config:
+  product-name: azure-log-analytics-nozzle
+  product-properties:
+    .properties.allow_paid_service_plans:
+      value: false
+    .properties.apply_open_security_group:
+      value: true
+    .properties.cf_environment:
+      value: cf
+    .properties.firehose_user:
+      value: ((firehose_user))
+    .properties.firehose_user_password:
+      value:
+        secret: ((firehose_password))
+    .properties.idle_timeout:
+      value: 60s
+    .properties.log_event_count:
+      value: true
+    .properties.log_event_count_interval:
+      value: 60s
+    .properties.log_level:
+      value: DEBUG
+    .properties.nozzle_instance_number:
+      value: 2
+    .properties.oms_batch_time:
+      value: 10s
+    .properties.oms_key:
+      value:
+        secret: ((oms_workspace_key))
+    .properties.oms_max_msg_num_per_batch:
+      value: 1000
+    .properties.oms_post_timeout:
+      value: 10s
+    .properties.oms_workspace:
+      value: "((oms_workspace_id))"
+    .properties.org:
+      value: system
+    .properties.skip_ssl_validation:
+      value: false
+    .properties.space:
+      value: azure-log-analytics-nozzle-space
+  network-properties:
+    network:
+      name: Deployment
+    other_availability_zones:
+    - name: "null"
+    singleton_availability_zone:
+      name: "null"
+  resource-config:
+    delete-all:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    deploy-all:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+  errand-config:
+    delete-all:
+      pre-delete-state: true
+    deploy-all:
+      post-deploy-state: true
