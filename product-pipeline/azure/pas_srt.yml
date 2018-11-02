@@ -2,7 +2,6 @@
 product_file: srt-*.pivotal
 product_regexp: srt-(.*).pivotal
 product_version: ((pas_version))
-stemcell_regexp: bosh-stemcell-(.*)-azure-hyperv-ubuntu-xenial-go_agent.tgz
 product_slug_name: elastic-runtime
 config:
   product-name: cf

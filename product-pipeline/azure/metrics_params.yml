@@ -1,0 +1,73 @@
+---
+product_file: apm-*.pivotal
+product_regexp: apm-(.*).pivotal
+product_version: ((apm_version))
+config:
+  product-name: apmPostgres
+  product-properties:
+    .errand-runner.ingestor_instance_count:
+      value: 2
+    .errand-runner.logs_queue_instance_count:
+      value: 2
+    .errand-runner.logs_retention_window:
+      value: 14
+    .errand-runner.metrics_queue_instance_count:
+      value: 2
+    .errand-runner.metrics_retention_window:
+      value: 14
+    .errand-runner.server_instance_count:
+      value: 2
+    .mysql.roadmin_password:
+      value:
+        secret: ((apm_mysql_ro_password))
+    .properties.cf_app_org:
+      value: system
+    .properties.cf_app_space:
+      value: metrics-v1-5
+    .properties.cf_prior_app_space:
+      value: metrics-v1-4
+  network-properties:
+    network:
+      name: Services
+    other_availability_zones:
+    - name: "null"
+    singleton_availability_zone:
+      name: "null"
+  resource-config:
+    errand-runner:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    mysql:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    postgres:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    redis:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+  errand-config:
+    delete-space:
+      pre-delete-state: true
+    migrate-route:
+      post-deploy-state: true
+    push-apps:
+      post-deploy-state: true
+    smoke-tests:
+      post-deploy-state: true

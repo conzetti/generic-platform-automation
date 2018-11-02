@@ -1,0 +1,80 @@
+---
+product_file: azure-open-service-broker-pcf-*.pivotal
+product_regexp: azure-open-service-broker-pcf-(.*).pivotal
+product_version: ((azure-open-service-broker-pcf_version))
+config:
+  product-name: azure-open-service-broker-pcf
+  product-properties:
+    .properties.allow_paid_service_plans:
+      value: true
+    .properties.apply_open_security_group:
+      value: true
+    .properties.async_redis_db:
+      value: 1
+    .properties.async_redis_enable_tls:
+      value: true
+    .properties.async_redis_host:
+      value: ((aosb_redis_host))
+    .properties.async_redis_password:
+      value: ((aosb_redis_password))
+    .properties.async_redis_port:
+      value: 6380
+    .properties.azure_client_id:
+      value: ((aosb_client_id))
+    .properties.azure_client_secret:
+      value:
+        secret: ((aosb_client_secret))
+    .properties.azure_environment:
+      value: AzurePublicCloud
+    .properties.azure_subscription_id:
+      value: ((aosb_subscription_id))
+    .properties.azure_tenant_id:
+      value: ((aosb_tenant_id))
+    .properties.crypto_aes256_key:
+      value:
+        secret: ((aosb_redis_crypto_key))
+    .properties.crypto_encryption_scheme:
+      value: AES256
+    .properties.log_level:
+      value: INFO
+    .properties.min_stability:
+      value: EXPERIMENTAL
+    .properties.open_service_broker_azure_enable_global_access_to_plans:
+      value: true
+    .properties.org:
+      value: system
+    .properties.space:
+      value: open-service-broker-azure-space
+    .properties.storage_redis_db:
+      value: 0
+    .properties.storage_redis_enable_tls:
+      value: true
+    .properties.storage_redis_host:
+      value: ((aosb_redis_host))
+    .properties.storage_redis_password:
+      value: ((aosb_redis_password))
+    .properties.storage_redis_port:
+      value: 6380
+  network-properties:
+    network:
+      name: Services
+    other_availability_zones:
+    - name: "null"
+    singleton_availability_zone:
+      name: "null"
+  resource-config:
+    delete-all:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    deploy-all:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+  errand-config:
+    delete-all:
+      pre-delete-state: true
+    deploy-all:
+      post-deploy-state: true

@@ -1,0 +1,137 @@
+---
+product_file: a9s-mongodb-*.pivotal
+product_regexp: a9s-mongodb-(.*).pivotal
+product_version: (())
+config:
+  product-name: a9s-mongodb
+  product-properties:
+    .properties.backup_config:
+      value: backup_disabled
+    .properties.big_plan_disk_type:
+      value: "102400"
+    .properties.big_plan_vm_type:
+      value: Standard_DS12_v2
+    .properties.medium_plan_disk_type:
+      value: "51200"
+    .properties.medium_plan_vm_type:
+      value: Standard_F4s
+    .properties.nano_plan_disk_type:
+      value: "2048"
+    .properties.nano_plan_vm_type:
+      value: Standard_F1s
+    .properties.plan_config_acknowledgement:
+      value:
+      - acknowledge
+    .properties.service_network_az:
+      value:
+      - "null"
+    .properties.small_plan_disk_type:
+      value: "20480"
+    .properties.small_plan_vm_type:
+      value: Standard_F4s
+    .properties.syslog_selector:
+      value: disabled
+  network-properties:
+    network:
+      name: Deployment
+    other_availability_zones:
+    - name: "null"
+    service_network:
+      name: Services
+    singleton_availability_zone:
+      name: "null"
+  resource-config:
+    a9s-consul:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    a9s-pg:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    ancillary-services:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    broker:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    delete-deployments:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    deployer-api:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    deployments-updater:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    deregister-broker:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    extended-smoke-tests:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    plan-smoke-tests:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    register-broker:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    smoke-tests:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    spi:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    templates-uploader:
+      instances: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+  errand-config:
+    delete-deployments:
+      pre-delete-state: true
+    deregister-broker:
+      pre-delete-state: true
+    register-broker:
+      post-deploy-state: true
+    smoke-tests:
+      post-deploy-state: true
+    templates-uploader:
+      post-deploy-state: true
+

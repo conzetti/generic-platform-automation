@@ -1,0 +1,80 @@
+---
+product_file: p-healthwatch-*.pivotal
+product_regexp: p-healthwatch-(.*).pivotal
+product_version: (())
+config:
+  product-name: p-healthwatch
+  product-properties:
+    .healthwatch-forwarder.boshhealth_instance_count:
+      value: 1
+    .healthwatch-forwarder.boshtasks_instance_count:
+      value: 2
+    .healthwatch-forwarder.canary_instance_count:
+      value: 2
+    .healthwatch-forwarder.cli_instance_count:
+      value: 2
+    .healthwatch-forwarder.foundation_name:
+      value: Volition
+    .healthwatch-forwarder.health_check_az:
+      value: "null"
+    .healthwatch-forwarder.ingestor_instance_count:
+      value: 4
+    .healthwatch-forwarder.opsman_instance_count:
+      value: 2
+    .healthwatch-forwarder.publish_to_eva:
+      value: true
+    .healthwatch-forwarder.worker_instance_count:
+      value: 4
+    .mysql.skip_name_resolve:
+      value: true
+    .properties.boshtasks:
+      value: enable
+    .properties.boshtasks.enable.bosh_taskcheck_password:
+      value:
+        secret: ((healthwatch_uaa_client_secret))
+    .properties.boshtasks.enable.bosh_taskcheck_username:
+      value: ((healthwatch_uaa_client_username))
+    .properties.opsman:
+      value: enable
+    .properties.opsman.enable.url:
+      value: https://((opsman_target))
+    .properties.syslog_selector:
+      value: inactive
+  network-properties:
+    network:
+      name: Deployment
+    other_availability_zones:
+    - name: "null"
+    service_network:
+      name: Services
+    singleton_availability_zone:
+      name: "null"
+  resource-config:
+    healthwatch-forwarder:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    mysql:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+    redis:
+      instances: automatic
+      persistent_disk:
+        size_mb: automatic
+      instance_type:
+        id: automatic
+      internet_connected: false
+  errand-config:
+    delete-space:
+      pre-delete-state: true
+    push-apps:
+      post-deploy-state: true
+    smoke-tests:
+      post-deploy-state: true
