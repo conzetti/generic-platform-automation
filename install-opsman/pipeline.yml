@@ -163,10 +163,10 @@ jobs:
         unpack: true
   - task: generate-env
     params:
-      OPSMAN_CONFIG: ((opsman_config))
+      ENV_CONFIG: ((env_config))
     config:
       outputs:
-        - name: config
+        - name: env
       platform: linux
       image_resource:
         type: docker-image
@@ -177,7 +177,7 @@ jobs:
         args:
         - "-c"
         - |
-          bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
+          bosh int <(echo "${ENV_CONFIG}") > env/env.yml
   - task: export-installation
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/export-installation.yml
