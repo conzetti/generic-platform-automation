@@ -48,7 +48,7 @@ resources:
   type: s3
   source:
     access_key_id: ((s3.access_key_id))
-    bucket: ((s3.buckets.product))
+    bucket: ((s3.buckets.config))
     region_name: ((s3.region_name))
     secret_access_key: ((s3.secret_access_key))
     regexp: (installation*).zip
@@ -205,6 +205,7 @@ jobs:
     - get: state
   - task: generate-configs
     params:
+      AUTH_CONFIG: ((auth_config))
       ENV_CONFIG: ((env_config))
       OPSMAN_CONFIG: ((opsman_config))
     config:
@@ -223,14 +224,17 @@ jobs:
         - |
           bosh int <(echo "${ENV_CONFIG}") > env/env.yml
           bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
+          bosh int <(echo "${AUTH_CONFIG}") > config/auth.yml
   - task: upgrade-opsman
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/upgrade-opsman.yml
     input_mapping:
       image: opsman-image
-    params:
-      VARS_FILES: vars/opsman-vars.yml
     ensure:
       put: state
       params:
         file: generated-state/state.yml
+    on_success:
+      task: apply-director-changes
+      image: pcf-automation-image
+      file: pcf-automation-tasks/tasks/apply-director-changes.yml
