@@ -60,7 +60,7 @@ Running the `product-pipeline`
 
 .. code-block:: console
 
-    fly -t us-east-playground set-pipeline -c product-pipeline/pipeline.yml -l product-pipeline/common.yml -l product-pipeline/pas_srt.yml -p install-pas-srt
+    fly -t us-east-playground set-pipeline -c product-pipeline/pipeline.yml -l product-pipeline/common.yml -l product-pipeline/azure/pas_srt.yml -p install-pas-srt
 
 2. Profit
 
