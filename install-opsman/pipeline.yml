@@ -2,13 +2,13 @@
 #┌───────────────────────────────────────────────────────────────────┐
 #├ Resources for Director/Operations Manager                         │
 #│                                                                   │
-#├ S3:                                                               │
+#├ s3:                                                               │
 #│ ├── PCF Automation task                                           │
 #│ ├── PCF Automation docker image                                   │
 #│ ├── Operations Manager state file                                 │
 #│ ├── Operations Manager installation.zip                           │
 #│ └── Operations Manager image file                                 │
-#├ Time:                                                             │
+#├ time:                                                             │
 #│ ├── One-time trigger                                              │
 #│ └── Daily trigger                                                 │
 #└───────────────────────────────────────────────────────────────────┘
@@ -80,8 +80,7 @@ resources:
 #│ ├── Generate configurations                                       │
 #│ ├── Create Operations Manager VM                                  │
 #│ ├── Configure Operations Manager authentication (basic)           │
-#│ ├── Configure BOSH director                                       │
-#│ └── Operations Manager image file                                 │
+#│ └── Configure BOSH director                                       │
 #├ Export Operations Manager Installation:                           │
 #│ ├── Generate environment configuration                            │
 #│ └── Export installation.zip                                       │

@@ -37,21 +37,21 @@ env_config:
 opsman_config:
   opsman-configuration:
     azure:
-      subscription_id: ((iaas_configuration_subscription_id))
-      resource_group: ((iaas_configuration_resource_group_name))
-      tenant_id: ((iaas_configuration_tenant_id))
-      client_id: ((iaas_configuration_client_id))
-      client_secret: ((iaas_configuration_client_secret))
+      subscription_id: ((opsman_subscription_id))
+      resource_group: ((opsman_resource_group_name))
+      tenant_id: ((opsman_tenant_id))
+      client_id: ((opsman_client_id))
+      client_secret: ((opsman_client_secret))
       location: "Central US"
       public_ip: ((opsman_public_ip))
       private_ip: ((opsman_private_ip))
-      container: ((iaas_opsman_container))
-      network_security_group: ((iaas_configuration_opsman_security_group))
-      vpc_network: ((vpc_network))
-      vpc_subnet: ((net_mgmt_subnet))
-      storage_account: ((iaas_opsman_storage_account))
-      storage_key: ((iaas_configuration_storage_key))
-      ssh_public_key: ((iaas_configuration_ssh_public_key))
+      container: ((opsman_storage_container))
+      network_security_group: ((opsman_security_group))
+      vpc_network: ((opsman_network))
+      vpc_subnet: ((opsman_subnet))
+      storage_account: ((opsman_storage_account))
+      storage_key: ((opsman_storage_key))
+      ssh_public_key: ((opsman_ssh_public_key))
       vm_name: opsmanager
       boot_disk_size: 150
 
@@ -83,19 +83,19 @@ director_config:
     resurrector_enabled: true
     retry_bosh_deploys: true
   iaas-configuration:
-    bosh_storage_account_name: ((iaas_configuration_storage_account))
-    client_id: ((iaas_configuration_client_id))
-    client_secret: ((iaas_configuration_client_secret))
-    default_security_group: ((iaas_configuration_default_security_group))
-    deployments_storage_account_name: ((iaas_configuration_deployments_storage_account_name))
-    environment: ((iaas_configuration_environment))
-    resource_group_name: ((iaas_configuration_resource_group_name))
-    ssh_public_key: ((iaas_configuration_ssh_public_key))
-    ssh_private_key: ((iaas_configuration_ssh_private_key))
+    bosh_storage_account_name: ((director_storage_account))
+    client_id: ((director_client_id))
+    client_secret: ((director_client_secret))
+    default_security_group: ((director_default_security_group))
+    deployments_storage_account_name: ((director_deployments_storage_account))
+    environment: ((director_environment))
+    resource_group_name: ((director_resource_group_name))
+    ssh_public_key: ((director_ssh_public_key))
+    ssh_private_key: ((director_ssh_private_key))
     cloud_storage_type: managed_disks
     storage_account_type: Standard_LRS
-    subscription_id: ((iaas_configuration_subscription_id))
-    tenant_id: ((iaas_configuration_tenant_id))
+    subscription_id: ((director_subscription_id))
+    tenant_id: ((director_tenant_id))
   network-assignment:
     network:
       name: Management
