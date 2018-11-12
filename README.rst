@@ -5,9 +5,10 @@ Generic Platform Automation
 Overview
 ========
 
-The purpose of this repo is to is to provide an example of how to implement the platform-automatioon (`p-automator`)
-using tools that are largely native to managing PCF. This includes abusing `bosh interpolate` to render configurations
-on target containers, which reduces the complexity of using `credhub interpolate` within the container.
+The purpose of this repo is to is to provide an example of how to implement the Pivotal's platform-automation
+(`platform-automation` slug on Pivnet) using tools that are largely native to managing PCF. This includes abusing `bosh
+interpolate` to render configurations on target containers, which reduces the complexity of using `credhub interpolate`
+within the container.
 
 Pipelines
 ~~~~~~~~~
@@ -30,33 +31,33 @@ task container) and later back to YAML using `bosh interpolate`.
 .. code-block:: console
 
 		├── ext-deps
-		│   ├── params.yml
-		│   └── pipeline.yml
+		│   ├── params.yml
+		│   └── pipeline.yml
 		├── install-opsman
-		│   ├── params.yml
-		│   └── pipeline.yml
+		│   ├── params.yml
+		│   └── pipeline.yml
 		├── install-pas
-		│   ├── params.yml
-		│   └── pipeline.yml
+		│   ├── params.yml
+		│   └── pipeline.yml
 		└── product-pipeline
 				├── azure
-				│   ├── azure_log_analytics_params.yml
-				│   ├── azure_open_service_broker_pcf_params.yml
-				│   ├── healthwatch_params.yml
-				│   ├── metrics_params.yml
-				│   ├── mongodb_params.yml
-				│   ├── mysql_params.yml
-				│   ├── pas_srt.yml
-				│   ├── rabbitmq_params.yml
-				│   ├── redis_params.yml
-				│   └── scs_params.yml
+				│   ├── azure_log_analytics_params.yml
+				│   ├── azure_open_service_broker_pcf_params.yml
+				│   ├── healthwatch_params.yml
+				│   ├── metrics_params.yml
+				│   ├── mongodb_params.yml
+				│   ├── mysql_params.yml
+				│   ├── pas_srt.yml
+				│   ├── rabbitmq_params.yml
+				│   ├── redis_params.yml
+				│   └── scs_params.yml
 				├── common.yml
 				└── pipeline.yml
 
 Running the `product-pipeline`
 ==============================
 
-1. Set the pipeline for the specific tile you're using.
+1. Set the pipeline for the specific tile you're using (the example, below, uses PAS SRT).
 
 .. code-block:: console
 
@@ -68,5 +69,5 @@ Running the `product-pipeline`
 Contribution
 ============
 
-This is largely for demo purposes and adopting common patterns. If you want to
-make this repo better, feel free to open a PR!
+This is largely for demo purposes and adopting common patterns. If you want to make this repo better, feel free to open
+a PR!
