@@ -153,7 +153,7 @@ jobs:
         args:
         - "-c"
         - |
-          bosh int <(echo "${CONFIG}") > config/((config.product-name))-config.yml
+          bosh int <(awk -v ORS='\\n' '1' <(echo "${CONFIG}" | tr -d '\r')) > config/((config.product-name))-config.yml
   - task: configure-((config.product-name))
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/configure-product.yml

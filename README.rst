@@ -15,7 +15,6 @@ Pipelines
 
 - ext-deps
 - install-opsman
-- install-pas (deprecated)
 - product-pipeline
 
 **note**:
@@ -31,29 +30,51 @@ Pipelines
 
 .. code-block:: console
 
-		├── ext-deps
-		│   ├── params.yml
-		│   └── pipeline.yml
-		├── install-opsman
-		│   ├── params.yml
-		│   └── pipeline.yml
-		├── install-pas
-		│   ├── params.yml
-		│   └── pipeline.yml
-		└── product-pipeline
-				├── azure
-				│   ├── azure_log_analytics_params.yml
-				│   ├── azure_open_service_broker_pcf_params.yml
-				│   ├── healthwatch_params.yml
-				│   ├── metrics_params.yml
-				│   ├── mongodb_params.yml
-				│   ├── mysql_params.yml
-				│   ├── pas_srt.yml
-				│   ├── rabbitmq_params.yml
-				│   ├── redis_params.yml
-				│   └── scs_params.yml
-				├── common.yml
-				└── pipeline.yml
+   ├── ext-deps
+   │   ├── params.yml
+   │   └── pipeline.yml
+   ├── install-opsman
+   │   ├── params.yml
+   │   └── pipeline.yml
+   ├── product-pipeline
+   │   ├── azure
+   │   │   ├── a9s-mongodb
+   │   │   │   └── 2.1.0
+   │   │   │       └── params.yml
+   │   │   ├── azure-log-analytics
+   │   │   │   └── 1.3.1
+   │   │   │       └── params.yml
+   │   │   ├── azure-open-service-broker
+   │   │   │   └── 0.12.0
+   │   │   │       └── params.yml
+   │   │   ├── healthwatch
+   │   │   │   └── 1.4.4
+   │   │   │       └── params.yml
+   │   │   ├── metrics
+   │   │   │   └── 1.6.0
+   │   │   │       └── params.yml
+   │   │   ├── mysql
+   │   │   │   └── 2.4.4
+   │   │   │       └── params.yml
+   │   │   ├── pas
+   │   │   │   └── 2.2.13
+   │   │   │       ├── full
+   │   │   │       │   └── params.yml
+   │   │   │       └── small
+   │   │   │           └── params.yml
+   │   │   ├── rabbitmq
+   │   │   │   └── 1.15.4
+   │   │   │       └── params.yml
+   │   │   ├── redis
+   │   │   │   └── 2.0.1
+   │   │   │       └── params.yml
+   │   │   └── scs
+   │   │       └── 2.0.7
+   │   │           └── params.yml
+   │   ├── common.yml
+   │   └── pipeline.yml
+   └── README.rst
+
 
 Running the ``product-pipeline``
 ==============================
@@ -62,7 +83,7 @@ Running the ``product-pipeline``
 
 .. code-block:: console
 
-    fly -t us-east-playground set-pipeline -c product-pipeline/pipeline.yml -l product-pipeline/common.yml -l product-pipeline/azure/pas_srt.yml -p install-pas-srt
+    fly -t us-east-playground set-pipeline -c product-pipeline/pipeline.yml -l product-pipeline/common.yml -l product-pipeline/azure/pas/2.1.13/small/params.yml -p install-pas-srt
 
 2. Profit
 
