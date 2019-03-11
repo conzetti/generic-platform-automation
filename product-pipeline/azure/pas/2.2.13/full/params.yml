@@ -1,14 +1,9 @@
 ---
-s3:
-  access_key_id: ((s3_access_key_id))
-  region_name: us-east-1 
-  buckets:
-    product: ((product_bucket))
-    config: ((config_bucket))
-  secret_access_key: ((s3_secret_access_key))
-  endpoint: ((s3_endpoint))
-opsman_skip_ssl_validation: true
-pas_config:
+product_file: cf-2.2.13.*.pivotal
+product_regexp: cf-(2.2.13)-(.*).pivotal
+product_version: 2.2.13
+product_slug_name: elastic-runtime
+config:
   product-name: cf
   product-properties:
     .cloud_controller.allow_app_ssh_access:
@@ -150,9 +145,9 @@ pas_config:
         name: Prod PAS PCF Certificates
     .properties.nfs_volume_driver:
       value: enable
-    .properties.nfs_volume_driver.enable.ldap_server_host: 
+    .properties.nfs_volume_driver.enable.ldap_server_host:
       value: #((pas_ldap_server_host))
-    .properties.nfs_volume_driver.enable.ldap_server_port: 
+    .properties.nfs_volume_driver.enable.ldap_server_port:
       value: #((pas_ldap_server_port))
     .properties.nfs_volume_driver.enable.ldap_service_account_user:
       value: #((pas_nfs_service_account_username))
@@ -184,7 +179,7 @@ pas_config:
     .properties.router_keepalive_connections:
       value: enable
     .properties.routing_custom_ca_certificates:
-      value: #((pas_routing_custom_ca)) 
+      value: #((pas_routing_custom_ca))
     .properties.routing_disable_http:
       value: false
     .properties.routing_log_client_ips:
@@ -336,7 +331,7 @@ pas_config:
         id: automatic
       internet_connected: false
       elb_names:
-      - pcf-dxc-com-diego-ssh-lb
+      - pcf-generic-com-diego-ssh-lb
     diego_cell:
       instances: automatic
       instance_type:
@@ -380,7 +375,7 @@ pas_config:
         id: automatic
       internet_connected: false
       elb_names:
-      - pcf-dxc-com-mysql-lb
+      - pcf-generic-com-mysql-lb
     nats:
       instances: automatic
       instance_type:
@@ -399,7 +394,7 @@ pas_config:
         id: automatic
       internet_connected: false
       elb_names:
-      - pcf-dxc-com-web-lb
+      - pcf-generic-com-web-lb
     syslog_adapter:
       instances: automatic
       instance_type:
@@ -418,7 +413,7 @@ pas_config:
         id: automatic
       internet_connected: false
       elb_names:
-      - pcf-dxc-com-tcp-lb
+      - pcf-generic-com-tcp-lb
     uaa:
       instances: automatic
       instance_type:
@@ -441,4 +436,3 @@ pas_config:
       post-deploy-state: true
     test-autoscaling:
       post-deploy-state: true
-

@@ -125,9 +125,9 @@ jobs:
         - "-c"
         - |
           bosh int <(echo "${AUTH_CONFIG}") > config/auth.yml
-          bosh int <(echo "${DIRECTOR_CONFIG}") > config/director.yml
+          bosh int <(awk -v ORS='\\n' '1' <(echo "${DIRECTOR_CONFIG}" | tr -d '\r')) > config/director.yml
           bosh int <(echo "${ENV_CONFIG}") > env/env.yml
-          bosh int <(echo "${OPSMAN_CONFIG}") > config/opsman.yml
+          bosh int <(awk -v ORS='\\n' '1' <(echo "${OPSMAN_CONFIG}" | tr -d '\r')) > config/opsman.yml
   - task: create-vm
     image: pcf-automation-image
     file: pcf-automation-tasks/tasks/create-vm.yml

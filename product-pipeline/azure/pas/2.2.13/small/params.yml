@@ -1,7 +1,7 @@
 ---
-product_file: srt-*.pivotal
-product_regexp: srt-(.*).pivotal
-product_version: ((pas_version))
+product_file: srt-2.2.13.*.pivotal
+product_regexp: srt-(2.2.13)-(.*).pivotal
+product_version: 2.2.13
 product_slug_name: elastic-runtime
 config:
   product-name: cf
